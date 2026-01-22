@@ -7,30 +7,46 @@ import android.widget.ListView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements EditFragment.OnCityEditedListener {
 
-    private ArrayList<String> dataList;
-    private ListView cityList;
-    private ArrayAdapter<String> cityAdapter;
+    private ArrayList<City> cityListData;
+    private ArrayAdapter<City> cityAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        String[] cities = {
-                "Edmonton", "Vancouver", "Moscow",
-                "Sydney", "Berlin", "Vienna",
-                "Tokyo", "Beijing", "Osaka", "New Delhi"
-        };
+        cityListData = new ArrayList<>();
+        cityListData.add(new City("Edmonton", "AB"));
+        cityListData.add(new City("Vancouver", "BC"));
+        cityListData.add(new City("Montreal", "QC"));
+        cityListData.add(new City("Toronto", "ON"));
 
-        dataList = new ArrayList<>();
-        dataList.addAll(Arrays.asList(cities));
+        ListView cityList = findViewById(R.id.city_list);
+        cityAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1,
+                cityListData);
 
-        cityList = findViewById(R.id.city_list);
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
         cityList.setAdapter(cityAdapter);
+
+        //briefly hold click to enable editing
+        cityList.setOnItemLongClickListener((parent, view, position, id) -> {
+            City city = cityListData.get(position);
+
+            EditFragment fragment =
+                    EditFragment.newInstance(city, position);
+            fragment.show(getSupportFragmentManager(), "EDIT_CITY");
+
+            return true;
+        });
+    }
+
+    @Override
+    public void onCityEdited(int position, City city) {
+        cityListData.set(position, city);
+        cityAdapter.notifyDataSetChanged();
     }
 }
